@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css"
+          integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet", href="css/main.css">
+    <title>Magic-8-ball</title>
+</head>
+<body>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14"></script>
+
+<div id="app">
+    
+    <input type="text" v-on:input="incremet ($event.taget.value)">
+    <p>{{ value }}</p>
+    <p>{{ doubleValue }}</p>
+
+
+
+    <div class="magicball">
+    <h1 class="title1">Введите вопрос:</h1>
+    <input type="text" class="input1" id="input1"> <!--v-model="user_input"--> 
+    <button v-on:click="sendQuestion" type="button" class="btn btn-primary">Получить предсказание</button>
+    </div>
+
+    <div class="sphere black"> <h1 class="answer">Ответ</h1> </div>
+
+</div>
+
+<script src="js/main.js"></script>
+</body>
+</html>
