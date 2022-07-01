@@ -12,7 +12,9 @@
       <button @click="logout()" class="logout">Выйти</button>
     </div>
     <h1 class="answer">{{ answer }}</h1>
-    <h1 class="quest_cnt">Этот вопрос задавали {{ question_cnt }} раз</h1>
+    <div v-if="is_show_cnt()">
+      <h1 class="quest_cnt">Этот вопрос задавали {{ question_cnt }} раз</h1>
+    </div>
   </div>
 
 
@@ -60,6 +62,7 @@ export default {
         show_main: false,
         show_login: true,
         show_register: false,
+        show_question_cnt: false
       },
       login: {
         username: '',
@@ -76,6 +79,7 @@ export default {
       },
       token: '',
       err: '',
+      times: ''
     }
   },
   created() {
@@ -171,9 +175,12 @@ export default {
           password2: this.register.password2
         })
         .then(response => {
+          this.flags.show_login = true
+          this.flags.show_main = false
+          this.flags.show_register = false
         })
         .catch(error => {
-          console.log("Error login")
+          console.log("Error reg")
           console.log(error)
           this.is_show_register()
           this.flags.show_register = true
@@ -197,6 +204,8 @@ export default {
           this.question_cnt = response.data.question_cnt
           this.is_show_main()
           this.flags.show_main = true
+          this.is_show_cnt()
+          this.flags.show_question_cnt = true
         })
         .catch(error => {
           console.log("Error getAnswer")
@@ -204,7 +213,7 @@ export default {
           this.err = 'Невозможно получить ответ!'
         })
       this.is_show_main()
-      this.flags.show_main = true
+      this.is_show_question_cnt()
     },
     is_show_main() {
       return this.flags.show_main == true
@@ -215,6 +224,9 @@ export default {
     is_show_login() {
       return this.flags.show_login == true
     },
+    is_show_cnt(){
+      return this.flags.show_question_cnt == true
+    }
   },
 }
 </script>
