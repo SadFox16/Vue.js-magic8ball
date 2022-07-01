@@ -213,7 +213,6 @@ export default {
           this.err = 'Невозможно получить ответ!'
         })
       this.is_show_main()
-      this.is_show_question_cnt()
     },
     is_show_main() {
       return this.flags.show_main == true
