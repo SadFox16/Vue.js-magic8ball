@@ -51,7 +51,6 @@
 <script>
 import { is } from '@babel/types'
 import axios from 'axios'
-axios.defaults.baseURL = 'http://127.0.0.1:8000'
 
 export default {
 
@@ -76,7 +75,7 @@ export default {
         password2: ''
       },
       token: '',
-      err: ''
+      err: '',
     }
   },
   created() {
@@ -84,7 +83,6 @@ export default {
   },
   mounted() {
     this.check_token()
-    
   },
 
   methods: {
@@ -94,7 +92,7 @@ export default {
       this.flags.show_main = false
       this.flags.show_register = false
       axios
-        .post('http://127.0.0.1:8000/login/', {
+        .post(process.env.VUE_APP_APIURL+'/login/', {
           username: this.login.username,
           password: this.login.password,
         })
@@ -131,10 +129,9 @@ export default {
 
     check_token() {
       this.token = JSON.parse(localStorage.getItem('access_token'))
-      console.log(this.token)
       if (this.token) {
         axios
-          .post('http://127.0.0.1:8000/api/token/verify/',
+          .post(process.env.VUE_APP_APIURL+'api/token/verify/',
             {
               token: this.token
             })
@@ -168,7 +165,7 @@ export default {
 
     registrate() {
       axios
-        .post('http://127.0.0.1:8000/register/', {
+        .post(process.env.VUE_APP_APIURL+'/register/', {
           username: this.register.username,
           password: this.register.password,
           password2: this.register.password2
@@ -192,7 +189,7 @@ export default {
       this.is_show_login()
       this.flags.show_main = true
       axios
-        .post('http://127.0.0.1:8000/getanswer/',
+        .post(process.env.VUE_APP_APIURL+'/getanswer/',
           { question: this.question },
           { headers: { "Authorization": 'Bearer ' + this.token } })
         .then(response => {
