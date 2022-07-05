@@ -96,7 +96,6 @@ export default {
           localStorage.setItem('access_token', JSON.stringify(response.data.access))
           localStorage.setItem('refresh_token', JSON.stringify(response.data.refresh))
           this.token = JSON.parse(localStorage.getItem('access_token'))
-          console.log(this.token)
           this.flags.show_login = false
           this.flags.show_main = true
           this.flags.show_register = false
