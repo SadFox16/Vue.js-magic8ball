@@ -1,28 +1,25 @@
 <template>
-  <h1>Magic 8 ball</h1>
 
   <h1 class="error">{{ err }}</h1>
 
-  <div id="main" v-if="is_show_main()" class="main">
+  <div id="main" v-if="flags.show_main" class="main">
     <h1 class="hello">Приветствую, {{ login.username }}</h1>
     <h1>Введите вопрос:</h1>
-    <input type="text" v-model="question" class="question">
+    <input type="text" v-model="question" class="question" placeholder="Введите вопрос">
     <button @click="getAnswer()" class="get_answer">Получить предсказание</button>
     <div>
       <button @click="logout()" class="logout">Выйти</button>
     </div>
-    <h1 class="answer">{{ answer }}</h1>
-    <div v-if="is_show_cnt()">
-      <h1 class="quest_cnt">Этот вопрос задавали {{ question_cnt }} раз</h1>
-    </div>
+    <h1 class="answer">Ответ: {{ answer }}</h1>
+    <h1 class="quest_cnt">Этот вопрос задавали {{ question_cnt }} раз</h1>
   </div>
 
 
-  <div id="login" v-if="is_show_login()" class="login">
+  <div id="login" v-if="flags.show_login" class="login">
       <h1>Логин:</h1>
-      <input type="text" v-model="login.username" class="user_name">
+      <input type="text" v-model="login.username" class="user_name" placeholder="Введите логин">
       <h1>Пароль:</h1>
-      <input type="password" v-model="login.password" class="user_pwd">
+      <input type="password" v-model="login.password" class="user_pwd" placeholder="Введите пароль">
       <div>
         <button @click="do_login()" class="login_click">Логин</button>
         <button @click="do_register()" class="register_click">Регистрация</button>
@@ -30,20 +27,20 @@
   </div>
 
 
-  <div id="register" v-if="is_show_register()" class="register">
+  <div id="register" v-if="flags.show_register" class="register">
     <div class="login">
       <h1>Придумайте логин:</h1>
-      <input type="text" v-model="register.username" class="user_name">
+      <input type="text" v-model="register.username" class="user_name" placeholder="Придумайте логин">
     </div>
 
     <div class="password">
       <h1>Придумайте пароль:</h1>
-      <input type="password" v-model="register.password" class="user_pwd">
+      <input type="password" v-model="register.password" class="user_pwd" placeholder="Придумайте пароль(8 символов, не должен совпадать с логином)">
     </div>
 
     <div class="password">
       <h1>Повторите пароль:</h1>
-      <input type="password" v-model="register.password2" class="user_pwd">
+      <input type="password" v-model="register.password2" class="user_pwd" placeholder="Повторите пароль">
     </div>
     <button @click="registrate()" class="register_click">Регистрация</button>
     <button @click="back()" class="register_click">Назад</button>
@@ -51,7 +48,6 @@
 </template>
 
 <script>
-import { is } from '@babel/types'
 import axios from 'axios'
 
 export default {
@@ -62,7 +58,6 @@ export default {
         show_main: false,
         show_login: true,
         show_register: false,
-        show_question_cnt: false
       },
       login: {
         username: '',
@@ -79,7 +74,6 @@ export default {
       },
       token: '',
       err: '',
-      times: ''
     }
   },
   created() {
@@ -92,9 +86,7 @@ export default {
   methods: {
 
     do_login() {
-      this.flags.show_login = true
-      this.flags.show_main = false
-      this.flags.show_register = false
+      this.err = ''
       axios
         .post(process.env.VUE_APP_APIURL+'/login/', {
           username: this.login.username,
@@ -105,7 +97,9 @@ export default {
           localStorage.setItem('refresh_token', JSON.stringify(response.data.refresh))
           this.token = JSON.parse(localStorage.getItem('access_token'))
           console.log(this.token)
-
+          this.flags.show_login = false
+          this.flags.show_main = true
+          this.flags.show_register = false
         }).catch(error => {
           console.log("Error login")
           console.log(error)
@@ -114,24 +108,24 @@ export default {
           this.flags.show_main = false
           this.flags.show_register = false
         })
-      this.flags.show_login = false
-      this.flags.show_main = true
-      this.flags.show_register = false
     },
 
     do_register() {
+      this.err = ''
       this.flags.show_login = false
       this.flags.show_main = false
       this.flags.show_register = true
     },
 
     back() {
+      this.err = ''
       this.flags.show_login = true
       this.flags.show_main = false
       this.flags.show_register = false
     },
 
     check_token() {
+      this.err = ''
       this.token = JSON.parse(localStorage.getItem('access_token'))
       if (this.token) {
         axios
@@ -161,6 +155,7 @@ export default {
     },
 
     logout() {
+      this.err = ''
       localStorage.removeItem('access_token')
       this.flags.show_login = true
       this.flags.show_main = false
@@ -168,6 +163,15 @@ export default {
     },
 
     registrate() {
+      this.err = ''
+      if(this.register.password == this.register.username){
+        this.err = 'Пароль не должен совпадать с логином!'
+        return;
+      }
+      if(this.register.password.length < 8){
+        this.err = 'Пароль должен состоять минимум из 8 символов!'
+        return;
+      }
       axios
         .post(process.env.VUE_APP_APIURL+'/register/', {
           username: this.register.username,
@@ -175,26 +179,22 @@ export default {
           password2: this.register.password2
         })
         .then(response => {
-          this.flags.show_login = true
-          this.flags.show_main = false
-          this.flags.show_register = false
         })
         .catch(error => {
-          console.log("Error reg")
+          console.log("Error login")
           console.log(error)
-          this.is_show_register()
           this.flags.show_register = true
           this.reg_error = error
           this.err = 'Неверно указаны данные!'
         })
-      this.flags.show_login = false
-      this.flags.show_main = false
-      this.flags.show_register = true
     },
 
     getAnswer() {
-      this.is_show_login()
-      this.flags.show_main = true
+      this.err = ''
+      if(this.question == ''){
+        this.err = 'Вы не задали вопрос!'
+        return;
+      }
       axios
         .post(process.env.VUE_APP_APIURL+'/getanswer/',
           { question: this.question },
@@ -202,30 +202,14 @@ export default {
         .then(response => {
           this.answer = response.data.answer
           this.question_cnt = response.data.question_cnt
-          this.is_show_main()
           this.flags.show_main = true
-          this.is_show_cnt()
-          this.flags.show_question_cnt = true
         })
         .catch(error => {
           console.log("Error getAnswer")
           console.log(error)
           this.err = 'Невозможно получить ответ!'
         })
-      this.is_show_main()
     },
-    is_show_main() {
-      return this.flags.show_main == true
-    },
-    is_show_register() {
-      return this.flags.show_register == true
-    },
-    is_show_login() {
-      return this.flags.show_login == true
-    },
-    is_show_cnt(){
-      return this.flags.show_question_cnt == true
-    }
   },
 }
 </script>
@@ -240,7 +224,7 @@ export default {
 }
 
 body{
-  background-color: #7FFFD4;
+  background-color: white;
 }
 
 nav {
@@ -269,6 +253,7 @@ button.get_answer{
   background-color: #FFD700;
   height: 40px;
   margin-left: 20px;
+  cursor: pointer;
 }
 
 button.logout{
@@ -276,6 +261,7 @@ button.logout{
   height: 40px;
   width: 600px;
   margin-left: 20px;
+  cursor: pointer;
 }
 
 input.question{
@@ -307,6 +293,7 @@ button.login_click{
   margin-right: 20px;
   width: 120px;
   margin-top: 20px;
+  cursor: pointer;
 }
 
 button.register_click{
@@ -314,6 +301,7 @@ button.register_click{
   height: 40px;
   margin-right: 20px;
   width: 120px;
+  cursor: pointer;
 }
 
 div.register{
