@@ -11,7 +11,9 @@
       <button @click="logout()" class="logout">Выйти</button>
     </div>
     <h1 class="answer">Ответ: {{ answer }}</h1>
-    <h1 class="quest_cnt">Этот вопрос задавали {{ question_cnt }} раз</h1>
+    <div v-if="flags.question_cnt">
+       <h1 class="quest_cnt">Этот вопрос задавали {{ question_cnt }} раз</h1>
+    </div>
   </div>
 
 
@@ -58,6 +60,8 @@ export default {
         show_main: false,
         show_login: true,
         show_register: false,
+        question_cnt: false,
+       // show_button: false
       },
       login: {
         username: '',
@@ -96,6 +100,7 @@ export default {
           localStorage.setItem('access_token', JSON.stringify(response.data.access))
           localStorage.setItem('refresh_token', JSON.stringify(response.data.refresh))
           this.token = JSON.parse(localStorage.getItem('access_token'))
+          console.log(this.token)
           this.flags.show_login = false
           this.flags.show_main = true
           this.flags.show_register = false
@@ -103,6 +108,8 @@ export default {
           console.log("Error login")
           console.log(error)
           this.err = 'Данные указаны неверно!'
+          this.login.password = ''
+          this.login.username = ''
           this.flags.show_login = true
           this.flags.show_main = false
           this.flags.show_register = false
@@ -163,12 +170,19 @@ export default {
 
     registrate() {
       this.err = ''
-      if(this.register.password == this.register.username){
-        this.err = 'Пароль не должен совпадать с логином!'
+      if(this.register.username == '' || this.register.password == '' || this.register.password2 == '')
+      {
+        this.err = 'Заполните все поля!'
         return;
-      }
-      if(this.register.password.length < 8){
+      }else if(this.register.password == this.register.username){
+        this.err = 'Пароль не должен совпадать с логином!'
+        this.register.password = ''
+        this.register.password2 = ''
+        return;
+      }else if(this.register.password.length < 8){
         this.err = 'Пароль должен состоять минимум из 8 символов!'
+        this.register.password = ''
+        this.register.password2 = ''
         return;
       }
       axios
@@ -199,9 +213,11 @@ export default {
           { question: this.question },
           { headers: { "Authorization": 'Bearer ' + this.token } })
         .then(response => {
+          this.flags.question_cnt = true
           this.answer = response.data.answer
           this.question_cnt = response.data.question_cnt
           this.flags.show_main = true
+          this.question = ''
         })
         .catch(error => {
           console.log("Error getAnswer")
