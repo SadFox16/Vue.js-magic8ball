@@ -37,7 +37,8 @@
 
     <div class="password">
       <h1>Придумайте пароль:</h1>
-      <input type="password" v-model="register.password" class="user_pwd" placeholder="Придумайте пароль(8 символов, не должен совпадать с логином)">
+      <h6>(8 символов, не должен совпадать с логином)</h6>
+      <input type="password" v-model="register.password" class="user_pwd" placeholder="Придумайте пароль">
     </div>
 
     <div class="password">
@@ -91,6 +92,10 @@ export default {
 
     do_login() {
       this.err = ''
+      if(this.login.password == '' || this.login.username == ''){
+        this.err = 'Заполните все поля!'
+        return;
+      }
       axios
         .post(process.env.VUE_APP_APIURL+'/login/', {
           username: this.login.username,
@@ -105,9 +110,7 @@ export default {
           this.flags.show_main = true
           this.flags.show_register = false
         }).catch(error => {
-          console.log("Error login")
-          console.log(error)
-          this.err = 'Данные указаны неверно!'
+          this.err = error.response.data.detail
           this.login.password = ''
           this.login.username = ''
           this.flags.show_login = true
@@ -151,9 +154,7 @@ export default {
             }
           })
           .catch(error => {
-            console.log("Error auth")
-            console.log(error)
-            this.err = 'Вы не авторизованы!'
+            this.err = error.response.data.detail
           })
       } else {
         this.logout()
@@ -166,6 +167,7 @@ export default {
       this.flags.show_login = true
       this.flags.show_main = false
       this.flags.show_register = false
+      this.err = 'Вы вышли'
     },
 
     registrate() {
@@ -192,13 +194,14 @@ export default {
           password2: this.register.password2
         })
         .then(response => {
+          this.err = 'Вы успешно зарегистрировались, авторизуйтесь'
+          this.flags.show_login = true
+          this.flags.show_register = false
         })
         .catch(error => {
-          console.log("Error login")
-          console.log(error)
+         this.err = error.response.data.detail
           this.flags.show_register = true
           this.reg_error = error
-          this.err = 'Неверно указаны данные!'
         })
     },
 
@@ -220,9 +223,7 @@ export default {
           this.question = ''
         })
         .catch(error => {
-          console.log("Error getAnswer")
-          console.log(error)
-          this.err = 'Невозможно получить ответ!'
+          this.err = error.response.data.detail
         })
     },
   },
